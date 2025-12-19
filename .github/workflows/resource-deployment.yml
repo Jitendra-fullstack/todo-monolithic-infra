@@ -1,0 +1,38 @@
+name: "Terraform Apply for Resource Group & Resource"
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+     - "subscription/*/*.tfvars"
+
+jobs:
+  label_issue:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          gh issue edit $ISSUE_URL --add-label "triage"
+
+  steps:
+   - name: Checkout
+     uses: action/Checkout@v4
+
+   - name: Filter Folder changes
+     uses: drony/path-filter@v3
+     id: changes
+     with:
+       filter: |
+         subscription:
+          - 'subscription/*/*.tfvars'
+       list-file: json    
+
+tf-apply:
+  needs: [get-tf-changes]   
+  strategy:
+   fail-fast: false
+   matrix:
+     folder:    
