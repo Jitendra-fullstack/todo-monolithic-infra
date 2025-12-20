@@ -64,7 +64,7 @@ jobs:
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
       with:
-        app-name: '<your-app-name>'  # Azure App Service name
+        app-name: 'svc-github-action'  # Azure App Service name
         slot-name: 'production'  # Or 'staging' if using slots
         package: .  # Path to your app's source code
 
