@@ -1,38 +1,70 @@
-name: "Terraform Apply for Resource Group & Resource"
+# name: "Terraform Apply for Resource Group & Resource"
+
+# on:
+#   push:
+#     branches:
+#       - "main"
+#     paths:
+#      - "subscription/*/*.tfvars"
+
+# jobs:
+#   label_issue:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - env:
+#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#           ISSUE_URL: ${{ github.event.issue.html_url }}
+#         run: |
+#           gh issue edit $ISSUE_URL --add-label "triage"
+
+#   steps:
+#    - name: Checkout
+#      uses: action/Checkout@v4
+
+#    - name: Filter Folder changes
+#      uses: drony/path-filter@v3
+#      id: changes
+#      with:
+#        filter: |
+#          subscription:
+#           - 'subscription/*/*.tfvars'
+#        list-file: json    
+
+# tf-apply:
+#   needs: [get-tf-changes]   
+#   strategy:
+#    fail-fast: false
+#    matrix:
+#      folder:    
+name: Deploy to Azure Web App
 
 on:
   push:
     branches:
-      - "main"
-    paths:
-     - "subscription/*/*.tfvars"
+      - main  # Trigger the action on a push to the 'main' branch.
 
 jobs:
-  label_issue:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_URL: ${{ github.event.issue.html_url }}
-        run: |
-          gh issue edit $ISSUE_URL --add-label "triage"
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-  steps:
-   - name: Checkout
-     uses: action/Checkout@v4
+    - name: Set up Node.js (or any runtime you are using)
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'  # Use the correct version for your stack
 
-   - name: Filter Folder changes
-     uses: drony/path-filter@v3
-     id: changes
-     with:
-       filter: |
-         subscription:
-          - 'subscription/*/*.tfvars'
-       list-file: json    
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials (we'll set this up next)
 
-tf-apply:
-  needs: [get-tf-changes]   
-  strategy:
-   fail-fast: false
-   matrix:
-     folder:    
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: '<your-app-name>'  # Azure App Service name
+        slot-name: 'production'  # Or 'staging' if using slots
+        package: .  # Path to your app's source code
+
